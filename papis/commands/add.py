@@ -393,12 +393,15 @@ def run(
         logger.warning(
             "(Hint) Use the update command if you just want to update"
             " the info.")
-        papis.tui.utils.text_area(
+        new_text = papis.tui.utils.text_area(
             'The following document is already in your library',
             papis.document.dump(found_document),
             lexer_name='yaml',
             height=20)
-        confirm = True
+        if new_text == None:
+            confirm = False
+        else:
+            confirm = True
 
     if open_file:
         for d_path in tmp_document.get_files():

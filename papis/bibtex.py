@@ -244,9 +244,12 @@ def to_bibtex(document: papis.document.Document) -> str:
             if bibKey == 'journal':
                 journal_key = papis.config.getstring('bibtex-journal-key')
                 if journal_key in document.keys():
+                    journal_name = str(document[journal_key])
+                    if not papis.config.getboolean('bibtex-unicode'):
+                        journal_name = unicode_to_latex(journal_name)
                     bibtex_string += "  %s = {%s},\n" % (
                         'journal',
-                        unicode_to_latex(str(document[journal_key]))
+                        journal_name
                     )
                 elif journal_key not in document.keys():
                     logger.warning(

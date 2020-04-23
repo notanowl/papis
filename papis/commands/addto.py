@@ -35,7 +35,11 @@ from typing import List, Optional
 
 def run(
         document: papis.document.Document,
+        link,
+        copy_main,
+        copy_pdf,
         filepaths: List[str],
+        subfolder,
         git: bool = False) -> None:
     logger = logging.getLogger('addto')
     g = papis.utils.create_identifier(ascii_lowercase)
@@ -63,7 +67,6 @@ def run(
                 suffix=string_append
             )
         )
-        new_file_list.append(new_filename)
 
         end_document_path = os.path.join(
             _doc_folder,
@@ -83,11 +86,41 @@ def run(
                 "%s already exists, ignoring..." % end_document_path
             )
             continue
-        logger.info(
-            "[CP] '%s' to '%s'" %
-            (in_file_path, end_document_path)
-        )
-        shutil.copy(in_file_path, end_document_path)
+
+        in_file_abspath = os.path.abspath(in_file_path)
+
+        if copy_pdf:
+          pdfs_new_path = os.path.expanduser(os.path.join(
+              papis.config.get_lib_dirs()[1], subfolder or '',  new_filename
+          ))
+
+          shutil.copy(in_file_path, pdfs_new_path)
+
+          in_file_abspath = pdfs_new_path
+
+          logger.debug(
+                  "[CP] '%s' to '%s'" %
+                  (in_file_abspath, end_document_path)
+          )
+
+        if copy_main:
+            logger.debug(
+                "[CP] '%s' to '%s'" %
+                (in_file_path, end_document_path)
+            )
+            shutil.copy(in_file_path, end_document_path)
+
+        if link:
+            logger.debug(
+                    "[SYMLINK] '%s' to '%s'" %
+                    (in_file_abspath, end_document_path)
+            )
+            os.symlink(in_file_abspath, end_document_path)
+
+        if link or copy_main:
+            new_file_list.append(new_filename)
+        else:
+            new_file_list.append(in_file_abspath)
 
     if "files" not in document.keys():
         document["files"] = []
@@ -112,6 +145,37 @@ def run(
     help="File fullpaths to documents",
     multiple=True,
     type=click.Path(exists=True))
+
+@click.option(
+    "--link/--no-link",
+    help="The file will be linked to the main folder instead of just saving its path",
+    default=False
+)
+
+@click.option(
+    "--copy-main/--no-copy-main",
+    help="The file will be copied to the main folder",
+    default=False
+)
+
+@click.option(
+    "--copy-pdf/--no-copy-pdf",
+    help="The file will be copied to the pdf folder",
+    default=False
+)
+
+@click.option(
+    "--file-name",
+    help="File name for the document (papis format)",
+    default=None
+)
+
+@click.option(
+    "-d", "--subfolder",
+    help="Subfolder in the library",
+    default=""
+)
+
 @click.option(
     "--file-name",
     help="File name for the document (papis format)",
@@ -120,7 +184,11 @@ def cli(
         query: str,
         git: bool,
         files: List[str],
+        link: bool,
+        copy_main: bool,
+        copy_pdf: bool,
         file_name: Optional[str],
+        subfolder: bool,
         sort_field: Optional[str],
         sort_reverse: bool) -> None:
     """Add files to an existing document"""
@@ -128,6 +196,34 @@ def cli(
     logger = logging.getLogger('cli:addto')
     if not documents:
         logger.warning(papis.strings.no_documents_retrieved_message)
+        return
+
+    document = papis.pick.pick_doc(documents)
+    if not document:
+        return
+
+    if copy_pdf and copy_main:
+        logger.warning(
+            "--copy-pdf and --copy-main can't be used together"
+        )
+        return
+
+    elif not copy_pdf and not copy_main:
+        logger.warning(
+            "--copy-pdf xor --copy-main has to be selected"
+        )
+        return
+
+    if copy_main and link:
+        logger.warning(
+            "--copy-main and --link can't be used together"
+        )
+        return
+
+    if copy_pdf and len(papis.config.get_lib_dirs()) <= 1:
+        logger.warning(
+            "the pdf directory no specified for --copy-pdf (e.g. dirs = [\"~/main_dir\", \"~/pdf_dir\"])"
+        )
         return
 
     if sort_field:
@@ -143,4 +239,4 @@ def cli(
     if file_name is not None:  # Use args if set
         papis.config.set("add-file-name", file_name)
 
-    run(document, files, git=git)
+    run(document, link, copy_main, copy_pdf, files, subfolder, git=git)
