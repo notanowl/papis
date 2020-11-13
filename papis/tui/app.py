@@ -190,8 +190,12 @@ def get_commands(app: Application) -> Tuple[List[Command], KeyBindings]:
 
     @kb.add('enter',  # type: ignore
             filter=has_focus(app.options_list.search_buffer))
-    def select(event: Event) -> None:
-        event.app.exit()
+    def select(cmd: Command) -> None:
+        from papis.commands.edit import run
+        docs = cmd.app.get_selection()
+        for doc in docs:
+            run(doc)
+        cmd.app.renderer.clear()
 
     @kb.add(keys_info["open_document_key"]["key"],  # type: ignore
             filter=has_focus(app.options_list.search_buffer))
