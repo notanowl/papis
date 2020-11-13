@@ -4,15 +4,16 @@ from papis.document import (
     to_json,
     from_folder,
     from_data,
-    format_doc,
     Document,
-    sort
+    sort,
 )
+import papis.format
 import tempfile
 import papis.config
 import pickle
 import os
 from tests import create_random_file, setup_test_library
+from tests import create_random_file, setup_test_library, create_real_document
 
 
 def test_new() -> None:
@@ -84,22 +85,42 @@ def test_main_features() -> None:
 
 def test_to_bibtex() -> None:
     papis.config.set('bibtex-journal-key', 'journal_abbrev')
-    doc = from_data({'title': 'Hello', 'type': 'book', 'journal': 'jcp'})
+    doc = from_data({'title': 'Hello',
+                     'author': 'Fernandez, Gilgamesh',
+                     'year': "3200BCE",
+                     'type': 'book',
+                     'journal': 'jcp'
+                     })
     doc.set_folder('path/to/superfolder')
-    assert(
-        to_bibtex(doc) ==
-        '@book{superfolder,\n  journal = {jcp},\n  title = {Hello},\n  type = {book},\n}\n'
-    )
+    assert \
+        to_bibtex(doc) == \
+        ("@book{HelloFernan3200bce,\n"
+         "  author = {Fernandez, Gilgamesh},\n"
+         "  journal = {jcp},\n"
+         "  title = {Hello},\n"
+         "  type = {book},\n"
+         "  year = {3200BCE},\n"
+         "}\n")
     doc['journal_abbrev'] = 'j'
-    assert(
-        to_bibtex(doc) ==
-        '@book{superfolder,\n  journal = {j},\n  title = {Hello},\n  type = {book},\n}\n'
-    )
+    assert \
+        to_bibtex(doc) == \
+        ('@book{HelloFernan3200bce,\n'
+         '  author = {Fernandez, Gilgamesh},\n'
+         '  journal = {j},\n'
+         '  title = {Hello},\n'
+         '  type = {book},\n'
+         '  year = {3200BCE},\n'
+         '}\n')
     del doc['title']
     doc['ref'] = 'hello1992'
     assert(
         to_bibtex(doc) ==
-        '@book{hello1992,\n  journal = {j},\n  type = {book},\n}\n'
+        '@book{hello1992,\n'
+        '  journal = {j},\n'
+        '  author = {Fernandez, Gilgamesh},\n',
+        '  type = {book},\n'
+        '  year = {3200BCE},\n'
+        '}\n'
     )
 
 
@@ -134,17 +155,3 @@ def test_sort() -> None:
     ]
     sDocs = sort(docs, key="year", reverse=False)
     assert(sDocs[0] == docs[1])
-
-
-def test_format_doc():
-    setup_test_library()
-    document = from_data(dict(author='Fulano', title='Something'))
-
-    assert format_doc('{doc[author]}{doc[title]}', document) == \
-        'FulanoSomething'
-    assert format_doc('{doc[author]}{doc[title]}{doc[blahblah]}', document) ==\
-        'FulanoSomething'
-
-    assert(format_doc(
-        '{doc[author]}{doc[title]}{doc[blahblah]}', dict(title='hell'))
-        == 'hell')

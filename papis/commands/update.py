@@ -1,4 +1,5 @@
 """This command is to update the information of the documents.
+
 Some examples of the usage are given below
 
 Examples
@@ -50,6 +51,7 @@ import papis.downloaders
 import papis.document
 import papis.database
 import papis.pick
+import papis.format
 import papis.cli
 import papis.importer
 import papis.git
@@ -114,8 +116,7 @@ def cli(query: str,
         sort_field: Optional[str],
         sort_reverse: bool,
         set_tuples: List[Tuple[str, str]],) -> None:
-    """Update a document from a given library"""
-
+    """Update a document from a given library."""
     logger = logging.getLogger('cli:update')
 
     if doc_folder:
@@ -143,7 +144,7 @@ def cli(query: str,
         ctx.data.update(document)
         if set_tuples:
             ctx.data.update(
-                {key: papis.document.format_doc(value, document)
+                {key: papis.format.format(value, document)
                     for key, value in set_tuples})
 
         matching_importers = []
@@ -163,7 +164,7 @@ def cli(query: str,
 
         for _importer_name, _uri in from_importer:
             try:
-                _uri = papis.document.format_doc(_uri, document)
+                _uri = papis.format.format(_uri, document)
                 _iclass = papis.importer.get_importer_by_name(_importer_name)
                 importer = _iclass(uri=_uri)
                 importer.fetch()

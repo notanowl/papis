@@ -98,6 +98,7 @@ import papis.commands.add
 import papis.commands.export
 import papis.api
 import papis.pick
+import papis.format
 import papis.crossref
 import papis.plugin
 from typing import List, Optional, Union, Any, Dict  # noqa: ignore
@@ -319,6 +320,14 @@ def citations(ctx: click.Context, query: str, doc_folder: str,
     ctx.obj['documents'] += docs
 
 
+@click.command("add")
+@click.pass_context
+def add(ctx: click.Context) -> None:
+    docs = ctx.obj["documents"]
+    for d in docs:
+        papis.commands.add.run([], d)
+
+
 @click.command('cmd')
 @click.pass_context
 @click.help_option('--help', '-h')
@@ -340,7 +349,7 @@ def cmd(ctx: click.Context, command: str) -> None:
     logger = logging.getLogger('explore:cmd')
     docs = ctx.obj['documents']
     for doc in docs:
-        fcommand = papis.document.format_doc(command, doc)
+        fcommand = papis.format.format(command, doc)
         splitted_command = shlex.split(fcommand)
         logger.info('Calling %s' % splitted_command)
         call(splitted_command)

@@ -3,6 +3,7 @@ Papis
 
 |PyPI-Versions| |Build_Status| |build_appveyor| |Coveralls| |RTD| |Pypi|
 |Code_Quality| |zenodo_badge| |PyPI-Downloads| |MYPY-CHECKED|
+|OpenHub|
 
 |Packaging_status|
 
@@ -78,7 +79,7 @@ you can set the year `--set year 2018` or tags for organizing
 
     papis add libc.pdf --set author "Sandra Loosemore" --set title "GNU C reference manual" --set year 2018 --set tags programming --confirm
     # Get paper information automatically via de DOI
-    papis add --from-doi 10.1090/noti963 --set tags programming rnoti-p434.pdf
+    papis add --from doi 10.1090/noti963 --set tags programming rnoti-p434.pdf
 
 Now open one for example, or edit them
 
@@ -134,6 +135,9 @@ See the ``AUTHORS`` list for a list of authored commits.
    :target: https://pypi.org/project/papis
 .. |MYPY-CHECKED| image:: http://www.mypy-lang.org/static/mypy_badge.svg
    :target: http://mypy-lang.org/
+.. |OpenHub| image:: https://www.openhub.net/p/papis/widgets/project_thin_badge.gif
+   :target: https://www.openhub.net/p/papis
+
 
 
 Related software

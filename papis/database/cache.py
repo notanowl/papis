@@ -5,6 +5,7 @@ import papis.utils
 import papis.docmatcher
 import papis.document
 import papis.config
+import papis.format
 import papis.database.base
 import re
 import multiprocessing
@@ -133,13 +134,13 @@ def match_document(
     True
     """
     match_format = match_format or str(papis.config.get("match-format"))
-    match_string = papis.document.format_doc(match_format, document)
+    match_string = papis.format.format(match_format, document)
     regex = get_regex_from_search(search)
     return re.match(regex, match_string, re.IGNORECASE)
 
 
 def get_regex_from_search(search: str) -> str:
-    """Creates a default regex from a search string.
+    r"""Creates a default regex from a search string.
 
     :param search: A valid search string
     :type  search: str
@@ -147,9 +148,12 @@ def get_regex_from_search(search: str) -> str:
     :rtype: str
 
     >>> get_regex_from_search(' ein 192     photon')
-    '.*.*ein.*192.*photon'
+    '.*ein.*192.*photon.*'
+
+    >>> get_regex_from_search('{1234}')
+    '.*\\{1234\\}.*'
     """
-    return r".*"+re.sub(r"\s+", ".*", search)
+    return ".*" + ".*".join(map(re.escape, search.split())) + ".*"
 
 
 class Database(papis.database.base.Database):
