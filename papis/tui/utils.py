@@ -65,11 +65,13 @@ def text_area(title: str,
 
     @kb.add('c-q')  # type: ignore
     def exit_(event: Event) -> None:
+        event.app.return_text = "quit"
         event.app.exit(0)
 
     @kb.add('c-s')  # type: ignore
     def save_(event: Event) -> None:
-        event.app.return_text = buffer1.text
+        event.app.return_text = "save"
+        event.app.exit(0)
 
     class App(Application):  # type: ignore
         # TODO: add stubs to be able to remove type ignore above

@@ -399,15 +399,19 @@ def run(paths: List[str],
         logger.warning(
             "(Hint) Use the update command if you just want to update"
             " the info.")
-        papis.tui.utils.text_area(
+        return_text = papis.tui.utils.text_area(
             'The following document is already in your library',
             papis.document.dump(found_document),
             lexer_name='yaml',
             height=20)
 
+        if return_text == "quit":
+            return
+
     if open_file:
         for d_path in tmp_document.get_files():
             papis.utils.open_file(d_path)
+
     if not papis.tui.utils.confirm('Really add?'):
         return
 
@@ -557,7 +561,7 @@ def cli(
             if importer.ctx.data:
                 logger.info('Merging data from importer {0}'
                             .format(importer.name))
-                if batch:
+                if batch or not ctx.data: # "or not ctx.data": please do not show the diff if no additional data were provided
                     ctx.data.update(importer.ctx.data)
                 else:
                     papis.utils.update_doc_from_data_interactively(
