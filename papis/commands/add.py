@@ -343,7 +343,6 @@ def run(paths: List[str],
                 data,
                 in_file_path,
                 suffix=string_append))
-        new_file_list.append(new_filename)
 
         tmp_end_filepath = os.path.join(
             temp_dir,
@@ -356,11 +355,43 @@ def run(paths: List[str],
                 "[SYMLINK] '%s' to '%s'" %
                 (in_file_abspath, tmp_end_filepath))
             os.symlink(in_file_abspath, tmp_end_filepath)
+            new_file_list.append(new_filename)
+        
+        # if copy_pdf:
+        #   pdfs_new_path = os.path.expanduser(os.path.join(
+        #       papis.config.get_lib_dirs()[1], subfolder or '',  new_filename
+        #   ))
+
+        #   shutil.copy(in_file_path, pdfs_new_path)
+
+        #   in_file_abspath = pdfs_new_path
+
+        #   logger.debug(
+        #           "[CP] '%s' to '%s'" %
+        #           (in_file_abspath, end_document_path)
+        #   )
+
+        elif len(papis.config.get_lib_dirs()) > 1:
+          pdfs_new_path = os.path.expanduser(os.path.join(
+              papis.config.get_lib_dirs()[1], subfolder or '',  new_filename
+          ))
+
+          shutil.copy(in_file_path, pdfs_new_path)
+
+          in_file_abspath = pdfs_new_path
+
+          logger.debug(
+                  "[CP] '%s' to '%s'" %
+                  (in_file_abspath, end_document_path)
+          )
+        new_file_list.append(end_document_path)
+
         else:
             logger.debug(
                 "[CP] '%s' to '%s'" %
                 (in_file_path, tmp_end_filepath))
             shutil.copy(in_file_path, tmp_end_filepath)
+            new_file_list.append(new_filename)
 
     data['files'] = new_file_list
 
